@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TKBService {
     /**
-     * Prompt for Gemini to generate an instance in a standardized format with criteria for behaviors/attributes.
+     * Prompt for Gemini to generate a random instance in a standardized format with criteria for behaviors/attributes.
      * Any required changes to response format, instance structure or fields go here.
      */
     private final String GEMINI_TKB_CONCEPT_PROMPT = """
@@ -74,7 +74,7 @@ public class TKBService {
      * @return Instance object parsed from Gemini API response
      * @throws IOException if there is a problem with the API call or response parsing
      */
-    public Concept getConcept() throws IOException {
+    public Concept getInstance() throws IOException {
         // Create HTTP client with timeout
         OkHttpClient client = new OkHttpClient.Builder().writeTimeout(20, TimeUnit.SECONDS).build();
 
