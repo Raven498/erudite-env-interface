@@ -74,7 +74,7 @@ public class TKBService {
      * @return Instance object parsed from Gemini API response
      * @throws IOException if there is a problem with the API call or response parsing
      */
-    public Concept getInstance() throws IOException {
+    public Instance getInstance() throws IOException {
         // Create HTTP client with timeout
         OkHttpClient client = new OkHttpClient.Builder().writeTimeout(20, TimeUnit.SECONDS).build();
 
@@ -94,7 +94,7 @@ public class TKBService {
         ResponseBody response = client.newCall(request).execute().body();
         String responseJson = response.string();
 
-        // Convert JSON response string into JsonNodes, get Gemini response
+        // Convert JSON response string into JsonNodes, filter for Gemini response
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseNode = mapper.readTree(responseJson);
         String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
@@ -121,6 +121,7 @@ public class TKBService {
             }
             if(parts.get(i).equals("Behaviors:")){
                 parseBehaviors = true;
+                continue;
             }
             if(parseBehaviors){
                 behaviorNames.add(parts.get(i));
@@ -132,6 +133,6 @@ public class TKBService {
         }
 
         // Construct and return record
-        return new Concept(objectName, "", attrs, behaviorNames);
+        return new Instance(objectName, "", attrs, behaviorNames);
     }
 }

@@ -30,7 +30,7 @@ public class Controller {
     True knowledge endpoint from Gemini for constructing concepts
      */
     @GetMapping("/instance")
-    public ResponseEntity<Concept> getInstance() throws IOException {
+    public ResponseEntity<Instance> getInstance() throws IOException {
         return ResponseEntity.ok(tkbService.getInstance());
     }
 
