@@ -26,7 +26,7 @@ public class TKBService {
      * Prompt for Gemini to generate a random instance in a standardized format with criteria for behaviors/attributes.
      * Any required changes to response format, instance structure or fields go here.
      */
-    private final String GEMINI_TKB_CONCEPT_PROMPT = """
+    private final String GEMINI_TKB_INSTANCE_PROMPT = """
             Generate a completely random proper noun that exists, and define it using an object-oriented structure with the 
             following standard format:
             
@@ -45,6 +45,31 @@ public class TKBService {
             They must also be very specific actions that complete specific tasks, not general behaviors that can create different outcomes.
             Follow the above-specified format strictly when defining your chosen object. Do not add any additional information
             or descriptions for any attributes, behaviors or objects.
+            """;
+
+    private final String GEMINI_TKB_CONCEPT_PROMPT = """
+            Generate a completely random noun that exists, and define it using an object-oriented structure corresponding to a class structure with the 
+            following standard format:
+            
+            {Concept Name}
+            
+            - Attributes:
+                - {AttributeName}
+                - ...
+            
+            - Behaviors:
+                - {BehaviorName}
+                - ...
+            Attributes should not have any values associated with them. 
+            Behaviors must only include actions that objects of this concept itself actively perform, not actions that its objects experience from other objects. 
+            They must also be very specific actions that complete specific tasks, not general behaviors that can create different outcomes.
+            Follow the above-specified format strictly when defining your chosen concept. Do not add any additional information
+            or descriptions for any attributes, behaviors or concepts.
+            """;
+
+    private final String GEMINI_TKB_ALGORITHM_PROMPT = """
+            For a completely random task, define an algorithm 
+            
             """;
 
     /**
@@ -79,7 +104,7 @@ public class TKBService {
         OkHttpClient client = new OkHttpClient.Builder().writeTimeout(20, TimeUnit.SECONDS).build();
 
         // Prepare request body with prompt
-        String json = String.format("{\"contents\": [{\"parts\": [{\"text\": \"%s\"}]}]}", GEMINI_TKB_CONCEPT_PROMPT);
+        String json = String.format("{\"contents\": [{\"parts\": [{\"text\": \"%s\"}]}]}", GEMINI_TKB_INSTANCE_PROMPT);
         RequestBody body = RequestBody.create(json, MediaType.get("application/json; charset=utf-8"));
 
         // Build request to Gemini API
@@ -134,5 +159,65 @@ public class TKBService {
 
         // Construct and return record
         return new Instance(objectName, "", attrs, behaviorNames);
+    }
+
+    public Concept getConcept() throws IOException{
+        // Create HTTP client with timeout
+        OkHttpClient client = new OkHttpClient.Builder().writeTimeout(20, TimeUnit.SECONDS).build();
+
+        // Prepare request body with prompt
+        String json = String.format("{\"contents\": [{\"parts\": [{\"text\": \"%s\"}]}]}", GEMINI_TKB_CONCEPT_PROMPT);
+        RequestBody body = RequestBody.create(json, MediaType.get("application/json; charset=utf-8"));
+
+        // Build request to Gemini API
+        Request request = new Request.Builder()
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
+                .addHeader("x-goog-api-key", "AIzaSyCnohh8PLr8PksJKPx8FfWosF_bU4SQOqM") // TODO: Create secrets for API key
+                .addHeader("Content-Type", "application/json")
+                .post(body)
+                .build();
+
+        // Execute request and get response as JSON string
+        ResponseBody response = client.newCall(request).execute().body();
+        String responseJson = response.string();
+
+        // Convert JSON response string into JsonNodes, filter for Gemini response
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseNode = mapper.readTree(responseJson);
+        String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
+        System.out.println(answer);
+
+        // Split response into lines and clean up empty strings
+        List<String> parts = new ArrayList<>(Arrays.asList(answer.split("\n")));
+        parts.removeIf(String::isEmpty);
+
+        // Extract object name
+        String conceptName = parts.get(0);
+
+        // Initialize record fields for parsing
+        ArrayList<String> attrs = new ArrayList<>();
+        ArrayList<String> behaviorNames = new ArrayList<>();
+        boolean parseBehaviors = false;
+        System.out.println("PARTS: " + parts);
+
+        // Parse attributes and behaviors from response
+        for(int i = 3; i < parts.size(); i++){
+            // Sanitize fields for unwanted chars
+            for(String c : INVALID_CHARS){
+                parts.set(i, parts.get(i).replace(c, ""));
+            }
+            if(parts.get(i).equals("Behaviors:")){
+                parseBehaviors = true;
+                continue;
+            }
+            if(parseBehaviors){
+                behaviorNames.add(parts.get(i));
+                continue;
+            }
+            attrs.add(parts.get(i));
+        }
+
+        // Construct and return record
+        return new Concept(conceptName, attrs, behaviorNames);
     }
 }
