@@ -109,7 +109,7 @@ public class TKBService {
 
         // Build request to Gemini API
         Request request = new Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent")
                 .addHeader("x-goog-api-key", "AIzaSyCnohh8PLr8PksJKPx8FfWosF_bU4SQOqM") // TODO: Create secrets for API key
                 .addHeader("Content-Type", "application/json")
                 .post(body)
@@ -122,6 +122,7 @@ public class TKBService {
         // Convert JSON response string into JsonNodes, filter for Gemini response
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseNode = mapper.readTree(responseJson);
+        System.out.println("ANSWER: " + responseJson);
         String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
         System.out.println(answer);
 
@@ -171,7 +172,7 @@ public class TKBService {
 
         // Build request to Gemini API
         Request request = new Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent")
                 .addHeader("x-goog-api-key", "AIzaSyCnohh8PLr8PksJKPx8FfWosF_bU4SQOqM") // TODO: Create secrets for API key
                 .addHeader("Content-Type", "application/json")
                 .post(body)

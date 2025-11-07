@@ -37,16 +37,22 @@ public class Controller {
     /*
     True knowledge endpoint from Gemini for constructing partial algorithms
      */
+
+    /*
     @GetMapping("/algo")
     public ResponseEntity<Algorithm> getAlgorithm() throws IOException {
-        return ResponseEntity.ok(tkbService.getInstance());
+        //return ResponseEntity.ok(tkbService.get());
     }
+
+     */
 
     /*
     True knowledge endpoint from Gemini for constructing concepts
      */
+
+
     @GetMapping("/concept")
     public ResponseEntity<Concept> getConcept() throws IOException {
-        return ResponseEntity.ok(tkbService.getInstance());
+        return ResponseEntity.ok(tkbService.getConcept());
     }
 }
