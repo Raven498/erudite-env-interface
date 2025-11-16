@@ -3,7 +3,9 @@ package com.erudite.env_interface;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.*;
@@ -67,9 +69,86 @@ public class TKBService {
             or descriptions for any attributes, behaviors or concepts.
             """;
 
+    private final String GEMINI_TKB_CONCEPT_PROMPT_V2_SINGLE = """
+            First, find a completely random topic that exists in real life. Then, generate a single, random idea (representing an abstract or tangible object, place, or person) 
+            that exists within this topic, and define it using an object-oriented structure corresponding to a class structure with the following standard format:
+            
+            {Concept Name}
+            
+            - Attributes:
+                - {AttributeName}
+                - ...
+            
+            - Behaviors:
+                - {BehaviorName}
+                - ...
+            
+            Attributes should not have any values associated with them. 
+            Behaviors must only include actions that objects of this concept itself actively perform, not actions that its objects experience from other objects. 
+            They must also be very specific actions that complete specific tasks, not general behaviors that can create different outcomes.
+            Follow the above-specified format strictly when defining your chosen concept. Do not add any additional information
+            or descriptions for any attributes, behaviors or concepts.
+        """;
+
+    //TODO:
+    /*
+    1. Evaluate the reliability of this prompt and develop a metric for it
+    2. Branch out this change (and anything else related to it)
+     */
     private final String GEMINI_TKB_ALGORITHM_PROMPT = """
             For a completely random task, define an algorithm 
+             First, find a completely random topic that exists in real life. Then,
             
+            generate a single, random idea (representing an abstract or tangible
+            
+            object, place, or person) that exists within this topic, and define it using an object-oriented
+            
+            structure corresponding to a class structure with the following standard format:
+            
+            
+            {Concept Name}
+            
+            
+            - Attributes:
+            
+            - {AttributeName}
+            
+            - ...
+            
+            
+            - Behaviors:
+            
+            - {BehaviorName}
+            
+            - ...
+            
+            
+            
+            Attributes should not have any values associated with them. Keep the
+            
+            concept itself as general as possible, and include any specific
+            
+            potential characteristics of it as attributes.
+            
+            
+            
+            Behaviors must only include actions that objects of this concept
+            
+            itself actively perform, not actions that its objects experience from
+            
+            other objects. They must also be very specific actions that complete
+            
+            specific tasks, not general behaviors that can create different
+            
+            outcomes.
+            
+            
+            
+            Follow the above-specified format strictly when defining your chosen
+            
+            concept. Do not add any additional information or descriptions for any
+            
+            attributes, behaviors or concepts.\s
             """;
 
     /**
@@ -187,6 +266,10 @@ public class TKBService {
         JsonNode responseNode = mapper.readTree(responseJson);
         String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
         System.out.println(answer);
+
+        if(responseNode.get("code") != null && Objects.equals(responseNode.get("code").asText(), "429")){ // handling Gemini rate limits
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
+        }
 
         // Split response into lines and clean up empty strings
         List<String> parts = new ArrayList<>(Arrays.asList(answer.split("\n")));
