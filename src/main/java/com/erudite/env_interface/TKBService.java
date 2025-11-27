@@ -189,7 +189,7 @@ public class TKBService {
         // Build request to Gemini API
         Request request = new Request.Builder()
                 .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent")
-                .addHeader("x-goog-api-key", "AIzaSyCnohh8PLr8PksJKPx8FfWosF_bU4SQOqM") // TODO: Create secrets for API key
+                .addHeader("x-goog-api-key", "") // TODO: Create secrets for API key
                 .addHeader("Content-Type", "application/json")
                 .post(body)
                 .build();
@@ -252,7 +252,7 @@ public class TKBService {
         // Build request to Gemini API
         Request request = new Request.Builder()
                 .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent")
-                .addHeader("x-goog-api-key", "AIzaSyCnohh8PLr8PksJKPx8FfWosF_bU4SQOqM") // TODO: Create secrets for API key
+                .addHeader("x-goog-api-key", "") // TODO: Create secrets for API key
                 .addHeader("Content-Type", "application/json")
                 .post(body)
                 .build();
