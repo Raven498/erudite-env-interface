@@ -201,9 +201,14 @@ public class TKBService {
         // Convert JSON response string into JsonNodes, filter for Gemini response
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseNode = mapper.readTree(responseJson);
+        if(responseNode.get("error") != null && Objects.equals(responseNode.get("error").get("code").asText(), "429")){ // handling Gemini rate limits
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
+        }
         System.out.println("ANSWER: " + responseJson);
         String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
         System.out.println(answer);
+
+
 
         // Split response into lines and clean up empty strings
         List<String> parts = new ArrayList<>(Arrays.asList(answer.split("\n")));
@@ -264,12 +269,12 @@ public class TKBService {
         // Convert JSON response string into JsonNodes, filter for Gemini response
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseNode = mapper.readTree(responseJson);
+        if(responseNode.get("error") != null && Objects.equals(responseNode.get("error").get("code").asText(), "429")){ // handling Gemini rate limits
+            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
+        }
         String answer = responseNode.get("candidates").deepCopy().get(0).get("content").get("parts").deepCopy().get(0).get("text").asText();
         System.out.println(answer);
 
-        if(responseNode.get("code") != null && Objects.equals(responseNode.get("code").asText(), "429")){ // handling Gemini rate limits
-            throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT);
-        }
 
         // Split response into lines and clean up empty strings
         List<String> parts = new ArrayList<>(Arrays.asList(answer.split("\n")));
